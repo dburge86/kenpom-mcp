@@ -1,7 +1,7 @@
 [project]
 name = "kenpom-mcp"
 version = "0.2.0"
-description = "MCP server for KenPom basketball analytics with Cloudflare Workers support"
+description = "MCP server for KenPom basketball analytics with Google Cloud Run support"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
@@ -17,8 +17,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "workers-py>=1.6.0",
-    "workers-runtime-sdk",
     "pytest>=8.0.0",
 ]
 

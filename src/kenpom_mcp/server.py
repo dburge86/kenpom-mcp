@@ -3,7 +3,7 @@ KenPom MCP Server
 
 Async MCP server with dual transport support:
 - STDIO for local use
-- SSE/HTTP for Cloudflare Workers deployment
+- SSE/HTTP for Google Cloud Run deployment
 """
 
 import json

@@ -4,10 +4,8 @@ HTTP Server for Cloud Run deployment.
 Provides SSE transport for remote MCP clients and a simple REST API.
 """
 
-import json
 import logging
 import os
-from datetime import datetime
 from typing import Any
 
 from dotenv import load_dotenv

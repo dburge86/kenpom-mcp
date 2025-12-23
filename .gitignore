@@ -2,6 +2,7 @@
 .env
 .venv/
 venv/
+.wrangler/
 
 # Python
 __pycache__/

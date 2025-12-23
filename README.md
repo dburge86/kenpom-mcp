@@ -1,13 +1,13 @@
 # KenPom MCP Server
 
-Async MCP server for KenPom basketball analytics with Cloudflare Workers support.
+Async MCP server for KenPom basketball analytics with Google Cloud Run support.
 
 > **Note**: Requires a paid KenPom subscription (email/password login, no API key needed).
 
 ## Features
 
 - 🚀 **Async Architecture** — Built with httpx for non-blocking requests
-- ☁️ **Cloudflare Workers Ready** — Deploy globally with zero cold starts
+- ☁️ **Google Cloud Run Ready** — Deploy globally with zero cold starts
 - 💾 **Smart Caching** — KV-based caching to reduce scraping frequency
 - 🔧 **Dual Transport** — Local (STDIO) and Remote (SSE) support
 - 📊 **13+ Data Tools** — Full coverage of KenPom stats
@@ -39,14 +39,16 @@ https://kenpom-mcp-965342935330.us-central1.run.app
 ### Test the deployment:
 
 ```bash
-# Health check
+# Health check (no auth required)
 curl https://kenpom-mcp-965342935330.us-central1.run.app/health
 
-# List tools
-curl https://kenpom-mcp-965342935330.us-central1.run.app/tools
+# List tools (requires API key)
+curl -H "X-API-Key: YOUR_API_KEY" \
+  https://kenpom-mcp-965342935330.us-central1.run.app/tools
 
 # Call a tool
-curl -X POST -H "Content-Type: application/json" \
+curl -X POST -H "X-API-Key: YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
   -d '{"method": "get_fanmatch", "params": {}, "id": 1}' \
   https://kenpom-mcp-965342935330.us-central1.run.app/mcp
 ```
@@ -66,14 +68,17 @@ curl -X POST -H "Content-Type: application/json" \
 }
 ```
 
-### Remote Mode (after deployment)
+### Remote Mode (Cloud Run)
 
 ```json
 {
   "mcpServers": {
     "kenpom": {
       "command": "npx",
-      "args": ["mcp-remote", "https://kenpom-mcp.<account>.workers.dev/sse"]
+      "args": [
+        "mcp-remote",
+        "https://kenpom-mcp-965342935330.us-central1.run.app/sse"
+      ]
     }
   }
 }
