@@ -1,0 +1,15 @@
+# Ignore everything not needed for Cloud Run
+.git/
+.gitignore
+.env
+.env.example
+.venv/
+.venv-workers/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+wrangler.toml
+worker.py
+python_modules/
+requirements.worker.txt

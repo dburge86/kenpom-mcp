@@ -21,21 +21,39 @@ uv sync
 uv run kenpom-mcp
 ```
 
-## Cloud Deployment (Cloudflare Workers)
+## Cloud Deployment (Google Cloud Run)
 
-```bash
-# Install workers-py
-uv tool install workers-py
+The service is deployed at:
 
-# Set secrets
-uv run pywrangler secret put KENPOM_EMAIL
-uv run pywrangler secret put KENPOM_PASSWORD
-
-# Deploy
-uv run pywrangler deploy
+```
+https://kenpom-mcp-965342935330.us-central1.run.app
 ```
 
-Your server will be live at: `https://kenpom-mcp.<account>.workers.dev`
+**Free Tier Protection:**
+
+- Min instances: 0 (scales to zero when idle)
+- Max instances: 1 (prevents runaway scaling)
+- Memory: 256Mi
+- CPU: 1
+
+### Test the deployment:
+
+```bash
+# Get identity token
+TOKEN=$(gcloud auth print-identity-token)
+
+# Health check
+curl -H "Authorization: Bearer $TOKEN" https://kenpom-mcp-965342935330.us-central1.run.app/health
+
+# List tools
+curl -H "Authorization: Bearer $TOKEN" https://kenpom-mcp-965342935330.us-central1.run.app/tools
+
+# Call a tool
+curl -X POST -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"method": "get_ratings", "params": {}, "id": 1}' \
+  https://kenpom-mcp-965342935330.us-central1.run.app/mcp
+```
 
 ## MCP Client Configuration
 
