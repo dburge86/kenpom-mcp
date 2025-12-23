@@ -38,6 +38,9 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# API key for protecting the service
+API_KEY = os.getenv("API_KEY", "")
+
 _scraper: KenPomScraper | None = None
 
 
@@ -180,16 +183,33 @@ async def call_tool(method: str, params: dict) -> dict:
         raise ValueError(f"Unknown tool: {method}")
 
 
-# CORS middleware
-async def cors_middleware(request: Request, call_next):
+# CORS and Auth middleware
+async def auth_middleware(request: Request, call_next):
+    # Allow OPTIONS for CORS preflight
     if request.method == "OPTIONS":
         return Response(
             headers={
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Headers": "Content-Type, X-API-Key",
             }
         )
+    
+    # Health check doesn't require auth
+    if request.url.path in ["/", "/health"]:
+        response = await call_next(request)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
+    
+    # Check API key if configured
+    if API_KEY:
+        provided_key = request.headers.get("X-API-Key", "")
+        if provided_key != API_KEY:
+            return JSONResponse(
+                {"error": "Unauthorized. Provide valid X-API-Key header."},
+                status_code=401
+            )
+    
     response = await call_next(request)
     response.headers["Access-Control-Allow-Origin"] = "*"
     return response
@@ -204,4 +224,5 @@ routes = [
 ]
 
 app = Starlette(routes=routes)
-app.middleware("http")(cors_middleware)
+app.middleware("http")(auth_middleware)
+
