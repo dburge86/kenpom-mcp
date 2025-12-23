@@ -39,19 +39,15 @@ https://kenpom-mcp-965342935330.us-central1.run.app
 ### Test the deployment:
 
 ```bash
-# Get identity token
-TOKEN=$(gcloud auth print-identity-token)
-
 # Health check
-curl -H "Authorization: Bearer $TOKEN" https://kenpom-mcp-965342935330.us-central1.run.app/health
+curl https://kenpom-mcp-965342935330.us-central1.run.app/health
 
 # List tools
-curl -H "Authorization: Bearer $TOKEN" https://kenpom-mcp-965342935330.us-central1.run.app/tools
+curl https://kenpom-mcp-965342935330.us-central1.run.app/tools
 
 # Call a tool
-curl -X POST -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"method": "get_ratings", "params": {}, "id": 1}' \
+curl -X POST -H "Content-Type: application/json" \
+  -d '{"method": "get_fanmatch", "params": {}, "id": 1}' \
   https://kenpom-mcp-965342935330.us-central1.run.app/mcp
 ```
 
