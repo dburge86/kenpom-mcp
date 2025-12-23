@@ -1,0 +1,29 @@
+[project]
+name = "kenpom-mcp"
+version = "0.2.0"
+description = "God-tier MCP server for KenPom basketball analytics - Cloudflare Workers edition"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "MIT"
+dependencies = [
+    "httpx>=0.28.0",
+    "beautifulsoup4>=4.12.0",
+    "lxml>=5.0.0",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py>=1.6.0",
+    "workers-runtime-sdk",
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+kenpom-mcp = "kenpom_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kenpom_mcp"]

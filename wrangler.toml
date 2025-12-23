@@ -1,0 +1,15 @@
+name = "kenpom-mcp"
+main = "worker.py"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["python_workers"]
+
+[vars]
+ENVIRONMENT = "production"
+
+# KV namespaces for caching
+[[kv_namespaces]]
+binding = "CACHE"
+id = "your-kv-namespace-id"
+
+# Secrets are set via: wrangler secret put KENPOM_EMAIL
+# and: wrangler secret put KENPOM_PASSWORD
