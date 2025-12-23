@@ -1,5 +1,5 @@
 """
-KenPom MCP Server - God-Tier Edition
+KenPom MCP Server
 
 Async MCP server with dual transport support:
 - STDIO for local use

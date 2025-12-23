@@ -1,6 +1,6 @@
 # KenPom MCP Server
 
-**God-Tier Edition** — Async MCP server for KenPom basketball analytics with Cloudflare Workers support.
+Async MCP server for KenPom basketball analytics with Cloudflare Workers support.
 
 > **Note**: Requires a paid KenPom subscription (email/password login, no API key needed).
 

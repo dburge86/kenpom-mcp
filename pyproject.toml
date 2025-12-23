@@ -1,7 +1,7 @@
 [project]
 name = "kenpom-mcp"
 version = "0.2.0"
-description = "God-tier MCP server for KenPom basketball analytics - Cloudflare Workers edition"
+description = "MCP server for KenPom basketball analytics with Cloudflare Workers support"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
