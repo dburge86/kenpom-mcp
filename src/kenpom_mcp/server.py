@@ -52,11 +52,15 @@ def get_scraper(cache: Any = None) -> KenPomScraper:
     """Get or create the scraper singleton."""
     global _scraper
     if _scraper is None:
+        # Re-load env vars to be safe, in case of stale process or late .env creation
+        _package_dir = Path(__file__).parent.parent.parent
+        load_dotenv(_package_dir / ".env", override=True)
+        
         email = os.getenv("KENPOM_EMAIL")
         password = os.getenv("KENPOM_PASSWORD")
         if not email or not password:
             raise ValueError(
-                "KENPOM_EMAIL and KENPOM_PASSWORD environment variables required"
+                f"KENPOM_EMAIL and KENPOM_PASSWORD environment variables required. Looked in {_package_dir} / .env"
             )
         _scraper = KenPomScraper(email, password, cache=cache)
     return _scraper
@@ -348,7 +352,7 @@ async def get_hca() -> str:
 
 def main():
     """Run the MCP server locally via STDIO."""
-    logger.info("Starting KenPom MCP server (local mode)...")
+    # Do not log to stdout/stderr on startup to keep the stream clean
     mcp.run(transport="stdio")
 
 
