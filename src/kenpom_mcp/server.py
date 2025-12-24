@@ -13,6 +13,10 @@ from datetime import datetime
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from dotenv import load_dotenv
+
+# Load credentials from .env
+load_dotenv()
 
 from .scraper import KenPomScraper
 from .parsers import (
