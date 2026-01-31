@@ -1,11 +1,12 @@
 """Parser for Pomeroy ratings page."""
 
-import re
 from io import StringIO
+
 from bs4 import BeautifulSoup
 
 try:
     import pandas as pd
+
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
@@ -22,18 +23,35 @@ def parse_pomeroy_ratings(soup: BeautifulSoup) -> list[dict]:
         # Flatten multi-level columns if present
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = [" ".join(col).strip() for col in df.columns.values]
-        
+
         # Rename columns to standard names
         df.columns = [
-            "Rank", "Team", "Conference", "Record", "AdjEM", "AdjO", "AdjO_Rank",
-            "AdjD", "AdjD_Rank", "AdjT", "AdjT_Rank", "Luck", "Luck_Rank",
-            "SOS_AdjEM", "SOS_AdjEM_Rank", "SOS_OppO", "SOS_OppO_Rank",
-            "SOS_OppD", "SOS_OppD_Rank", "NCSOS_AdjEM", "NCSOS_AdjEM_Rank"
-        ][:len(df.columns)]
-        
+            "Rank",
+            "Team",
+            "Conference",
+            "Record",
+            "AdjEM",
+            "AdjO",
+            "AdjO_Rank",
+            "AdjD",
+            "AdjD_Rank",
+            "AdjT",
+            "AdjT_Rank",
+            "Luck",
+            "Luck_Rank",
+            "SOS_AdjEM",
+            "SOS_AdjEM_Rank",
+            "SOS_OppO",
+            "SOS_OppO_Rank",
+            "SOS_OppD",
+            "SOS_OppD_Rank",
+            "NCSOS_AdjEM",
+            "NCSOS_AdjEM_Rank",
+        ][: len(df.columns)]
+
         # Remove header rows that got parsed as data
         df = df[df["Team"] != "Team"]
-        
+
         return df.to_dict(orient="records")
     else:
         # Pure Python fallback for Workers

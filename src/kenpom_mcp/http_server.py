@@ -10,26 +10,26 @@ from typing import Any
 
 from dotenv import load_dotenv
 from starlette.applications import Starlette
+from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
-from starlette.requests import Request
 
-from .scraper import KenPomScraper
 from .parsers import (
-    parse_pomeroy_ratings,
+    parse_arenas,
     parse_efficiency,
+    parse_fanmatch,
     parse_four_factors,
-    parse_team_stats,
-    parse_player_stats,
+    parse_game_attrs,
+    parse_hca,
     parse_height,
     parse_kpoy,
-    parse_fanmatch,
-    parse_arenas,
-    parse_hca,
-    parse_game_attrs,
-    parse_program_ratings,
+    parse_player_stats,
     parse_point_distribution,
+    parse_pomeroy_ratings,
+    parse_program_ratings,
+    parse_team_stats,
 )
+from .scraper import KenPomScraper
 
 load_dotenv()
 
@@ -70,9 +70,7 @@ TOOLS = [
         "description": "Get efficiency and tempo stats",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -80,9 +78,7 @@ TOOLS = [
         "description": "Get Four Factors stats",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -113,9 +109,7 @@ TOOLS = [
         "description": "Get height/experience data",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -123,9 +117,7 @@ TOOLS = [
         "description": "Get game predictions for a date",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "date": {"type": "string", "description": "Date in YYYY-MM-DD format"}
-            },
+            "properties": {"date": {"type": "string", "description": "Date in YYYY-MM-DD format"}},
         },
     },
     {
@@ -133,9 +125,7 @@ TOOLS = [
         "description": "Get arena information",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -144,7 +134,10 @@ TOOLS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "metric": {"type": "string", "description": "Attribute (Excitement, Tension, etc.)"},
+                "metric": {
+                    "type": "string",
+                    "description": "Attribute (Excitement, Tension, etc.)",
+                },
                 "season": {"type": "string", "description": "Season year"},
             },
         },
@@ -159,9 +152,7 @@ TOOLS = [
         "description": "Get KPOY standings",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -169,9 +160,7 @@ TOOLS = [
         "description": "Get point distribution",
         "inputSchema": {
             "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year"}
-            },
+            "properties": {"season": {"type": "string", "description": "Season year"}},
         },
     },
     {
@@ -197,15 +186,14 @@ async def call_tool(name: str, arguments: dict) -> Any:
         return parse_four_factors(soup)
     elif name == "get_team_stats":
         soup = await scraper.get_team_stats_page(
-            defense=arguments.get("defense", False),
-            season=arguments.get("season")
+            defense=arguments.get("defense", False), season=arguments.get("season")
         )
         return parse_team_stats(soup, defense=arguments.get("defense", False))
     elif name == "get_player_stats":
         soup = await scraper.get_player_stats_page(
             metric=arguments.get("metric", "eFG"),
             season=arguments.get("season"),
-            conf=arguments.get("conference")
+            conf=arguments.get("conference"),
         )
         return parse_player_stats(soup)
     elif name == "get_height":
@@ -219,8 +207,7 @@ async def call_tool(name: str, arguments: dict) -> Any:
         return parse_arenas(soup)
     elif name == "get_game_attrs":
         soup = await scraper.get_game_attrs_page(
-            metric=arguments.get("metric", "Excitement"),
-            season=arguments.get("season")
+            metric=arguments.get("metric", "Excitement"), season=arguments.get("season")
         )
         return parse_game_attrs(soup)
     elif name == "get_program_ratings":
@@ -261,80 +248,95 @@ async def mcp_handler(request: Request) -> JSONResponse:
 
         # Handle MCP protocol methods
         if method == "initialize":
-            return JSONResponse({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": {
-                    "protocolVersion": "2024-11-05",
-                    "capabilities": {
-                        "tools": {},
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {
+                        "protocolVersion": "2024-11-05",
+                        "capabilities": {
+                            "tools": {},
+                        },
+                        "serverInfo": {
+                            "name": "kenpom-mcp",
+                            "version": "0.2.0",
+                        },
                     },
-                    "serverInfo": {
-                        "name": "kenpom-mcp",
-                        "version": "0.2.0",
-                    },
-                },
-            })
+                }
+            )
 
         elif method == "notifications/initialized":
-            return JSONResponse({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": {},
-            })
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {},
+                }
+            )
 
         elif method == "tools/list":
-            return JSONResponse({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": {"tools": TOOLS},
-            })
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {"tools": TOOLS},
+                }
+            )
 
         elif method == "tools/call":
             tool_name = params.get("name", "")
             arguments = params.get("arguments", {})
             try:
                 result = await call_tool(tool_name, arguments)
-                return JSONResponse({
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "result": {
-                        "content": [
-                            {"type": "text", "text": str(result)}
-                        ],
-                    },
-                })
+                return JSONResponse(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "result": {
+                            "content": [{"type": "text", "text": str(result)}],
+                        },
+                    }
+                )
             except Exception as e:
                 logger.exception(f"Tool error: {tool_name}")
-                return JSONResponse({
-                    "jsonrpc": "2.0",
-                    "id": request_id,
-                    "error": {"code": -32603, "message": str(e)},
-                })
+                return JSONResponse(
+                    {
+                        "jsonrpc": "2.0",
+                        "id": request_id,
+                        "error": {"code": -32603, "message": str(e)},
+                    }
+                )
 
         # Legacy direct tool call (for backwards compatibility)
         elif method.startswith("get_"):
             result = await call_tool(method, params)
-            return JSONResponse({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "result": {"data": result},
-            })
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "result": {"data": result},
+                }
+            )
 
         else:
-            return JSONResponse({
-                "jsonrpc": "2.0",
-                "id": request_id,
-                "error": {"code": -32601, "message": f"Method not found: {method}"},
-            })
+            return JSONResponse(
+                {
+                    "jsonrpc": "2.0",
+                    "id": request_id,
+                    "error": {"code": -32601, "message": f"Method not found: {method}"},
+                }
+            )
 
     except Exception as e:
         logger.exception("MCP handler error")
-        return JSONResponse({
-            "jsonrpc": "2.0",
-            "id": None,
-            "error": {"code": -32603, "message": str(e)},
-        }, status_code=500)
+        return JSONResponse(
+            {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {"code": -32603, "message": str(e)},
+            },
+            status_code=500,
+        )
 
 
 # Auth and CORS middleware
@@ -364,7 +366,7 @@ async def auth_middleware(request: Request, call_next):
         if provided_key != API_KEY:
             return JSONResponse(
                 {"error": "Unauthorized. Provide valid X-API-Key header or api_key query param."},
-                status_code=401
+                status_code=401,
             )
 
     response = await call_next(request)

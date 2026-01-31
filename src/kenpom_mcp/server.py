@@ -9,33 +9,32 @@ Async MCP server with dual transport support:
 import json
 import logging
 import os
-from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
 from dotenv import load_dotenv
+from mcp.server.fastmcp import FastMCP
 
 # Load credentials from .env (find it relative to this package, not CWD)
 _package_dir = Path(__file__).parent.parent.parent
 load_dotenv(_package_dir / ".env")
 
-from .scraper import KenPomScraper
 from .parsers import (
-    parse_pomeroy_ratings,
+    parse_arenas,
     parse_efficiency,
+    parse_fanmatch,
     parse_four_factors,
-    parse_team_stats,
-    parse_player_stats,
+    parse_game_attrs,
+    parse_hca,
     parse_height,
     parse_kpoy,
-    parse_fanmatch,
-    parse_arenas,
-    parse_hca,
-    parse_game_attrs,
-    parse_program_ratings,
+    parse_player_stats,
     parse_point_distribution,
+    parse_pomeroy_ratings,
+    parse_program_ratings,
+    parse_team_stats,
 )
+from .scraper import KenPomScraper
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,7 +54,7 @@ def get_scraper(cache: Any = None) -> KenPomScraper:
         # Re-load env vars to be safe, in case of stale process or late .env creation
         _package_dir = Path(__file__).parent.parent.parent
         load_dotenv(_package_dir / ".env", override=True)
-        
+
         email = os.getenv("KENPOM_EMAIL")
         password = os.getenv("KENPOM_PASSWORD")
         if not email or not password:
@@ -167,9 +166,7 @@ async def get_team_stats(defense: bool = False, season: str | None = None) -> st
 
 @mcp.tool()
 async def get_player_stats(
-    metric: str = "eFG",
-    season: str | None = None,
-    conference: str | None = None
+    metric: str = "eFG", season: str | None = None, conference: str | None = None
 ) -> str:
     """
     Get player leaders by statistical metric.
@@ -352,7 +349,10 @@ async def get_hca() -> str:
 
 def main():
     """Run the MCP server locally via STDIO."""
-    # Do not log to stdout/stderr on startup to keep the stream clean
+    import sys
+
+    # Provide feedback to the user on stderr (doesn't interfere with MCP protocol)
+    print("KenPom MCP server started (transport=stdio)", file=sys.stderr)
     mcp.run(transport="stdio")
 
 

@@ -2,11 +2,12 @@
 
 import re
 from io import StringIO
-from datetime import datetime
+
 from bs4 import BeautifulSoup
 
 try:
     import pandas as pd
+
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
@@ -27,19 +28,19 @@ def parse_fanmatch(soup: BeautifulSoup) -> dict:
     title = soup.find("h2")
     if title:
         title_text = title.get_text(strip=True)
-        # Extract date from title like "Saturday, December 21st" 
+        # Extract date from title like "Saturday, December 21st"
         result["date"] = title_text
 
     # Parse daily stats from content
     content = soup.find(id="content") or soup.find("div", class_="content")
     if content:
         text = content.get_text()
-        
+
         # Extract stats using regex
         ppg_match = re.search(r"(\d+\.?\d*)\s*ppg", text, re.IGNORECASE)
         if ppg_match:
             result["ppg"] = float(ppg_match.group(1))
-        
+
         eff_match = re.search(r"efficiency.*?(\d+\.?\d*)", text, re.IGNORECASE)
         if eff_match:
             result["avg_eff"] = float(eff_match.group(1))
@@ -59,22 +60,20 @@ def _parse_games_table(table) -> list[dict]:
     if HAS_PANDAS:
         try:
             df = pd.read_html(StringIO(str(table)))[0]
-            
+
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = [" ".join(col).strip() for col in df.columns.values]
-            
+
             # Basic column mapping
-            columns = [
-                "Time", "Game", "Location", "TheLine", "Prediction", "PredMOV", "PredTotal"
-            ]
-            df.columns = columns[:len(df.columns)]
-            
+            columns = ["Time", "Game", "Location", "TheLine", "Prediction", "PredMOV", "PredTotal"]
+            df.columns = columns[: len(df.columns)]
+
             # Parse game info from the Game column
             for _, row in df.iterrows():
                 game = row.to_dict()
                 if game.get("Game") and str(game.get("Game")) != "Game":
                     games.append(game)
-            
+
             return games
         except Exception:
             pass

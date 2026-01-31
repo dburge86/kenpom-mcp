@@ -1,5 +1,7 @@
 # KenPom MCP Server
 
+[![CI](https://github.com/YOUR_USERNAME/mcp_kenpom/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/mcp_kenpom/actions/workflows/ci.yml)
+
 Async MCP server for KenPom basketball analytics with Google Cloud Run support.
 
 > **Note**: Requires a paid KenPom subscription (email/password login, no API key needed).

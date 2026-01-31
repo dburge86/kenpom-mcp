@@ -4,9 +4,8 @@ Handles authentication, session management, and HTTP requests using httpx.
 """
 
 import logging
-import re
-from typing import Any
 from datetime import datetime
+from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup

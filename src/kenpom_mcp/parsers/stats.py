@@ -2,10 +2,12 @@
 
 import re
 from io import StringIO
+
 from bs4 import BeautifulSoup
 
 try:
     import pandas as pd
+
     HAS_PANDAS = True
 except ImportError:
     HAS_PANDAS = False
@@ -17,14 +19,14 @@ def parse_team_stats(soup: BeautifulSoup, defense: bool = False) -> list[dict]:
 
     if HAS_PANDAS:
         df = pd.read_html(StringIO(str(table)))[0]
-        
+
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = [" ".join(col).strip() for col in df.columns.values]
-        
+
         # Clean up column names
         df.columns = [re.sub(r"\s+", "_", col) for col in df.columns]
         df = df[df.iloc[:, 1] != df.columns[1]]  # Remove header rows
-        
+
         return df.to_dict(orient="records")
     else:
         return _parse_table_fallback(soup)
@@ -36,18 +38,27 @@ def parse_player_stats(soup: BeautifulSoup) -> list[dict]:
 
     if HAS_PANDAS:
         df = pd.read_html(StringIO(str(table)))[0]
-        
+
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = [" ".join(col).strip() for col in df.columns.values]
-        
+
         # Standard player stats columns
         columns = [
-            "Rank", "Player", "Team", "Height", "Weight", "Year",
-            "Value", "O_Rtg", "Usage", "eFG_Pct", "TS_Pct"
+            "Rank",
+            "Player",
+            "Team",
+            "Height",
+            "Weight",
+            "Year",
+            "Value",
+            "O_Rtg",
+            "Usage",
+            "eFG_Pct",
+            "TS_Pct",
         ]
-        df.columns = columns[:len(df.columns)]
+        df.columns = columns[: len(df.columns)]
         df = df[df["Player"] != "Player"]
-        
+
         return df.to_dict(orient="records")
     else:
         return _parse_table_fallback(soup)
@@ -59,18 +70,28 @@ def parse_height(soup: BeautifulSoup) -> list[dict]:
 
     if HAS_PANDAS:
         df = pd.read_html(StringIO(str(table)))[0]
-        
+
         if isinstance(df.columns, pd.MultiIndex):
             df.columns = [" ".join(col).strip() for col in df.columns.values]
-        
+
         columns = [
-            "Rank", "Team", "Conference", "Avg_Hgt", "Avg_Hgt_Rank",
-            "Eff_Hgt", "Eff_Hgt_Rank", "Experience", "Exp_Rank",
-            "Bench", "Bench_Rank", "Continuity", "Cont_Rank"
+            "Rank",
+            "Team",
+            "Conference",
+            "Avg_Hgt",
+            "Avg_Hgt_Rank",
+            "Eff_Hgt",
+            "Eff_Hgt_Rank",
+            "Experience",
+            "Exp_Rank",
+            "Bench",
+            "Bench_Rank",
+            "Continuity",
+            "Cont_Rank",
         ]
-        df.columns = columns[:len(df.columns)]
+        df.columns = columns[: len(df.columns)]
         df = df[df["Team"] != "Team"]
-        
+
         return df.to_dict(orient="records")
     else:
         return _parse_table_fallback(soup)
@@ -84,10 +105,10 @@ def parse_kpoy(soup: BeautifulSoup) -> list[list[dict]]:
     for table in tables[:2]:  # KPOY and MVP tables
         if HAS_PANDAS:
             df = pd.read_html(StringIO(str(table)))[0]
-            
+
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = [" ".join(col).strip() for col in df.columns.values]
-            
+
             df = df[df.iloc[:, 1] != df.columns[1]]
             results.append(df.to_dict(orient="records"))
         else:
@@ -106,11 +127,11 @@ def _parse_table_fallback_simple(table) -> list[dict]:
     """Parse a single table without pandas."""
     rows = []
     headers = []
-    
+
     header_row = table.find("tr")
     if header_row:
         headers = [th.get_text(strip=True) for th in header_row.find_all(["th", "td"])]
-    
+
     for tr in table.find_all("tr")[1:]:
         cells = tr.find_all(["td", "th"])
         if cells:
@@ -119,5 +140,5 @@ def _parse_table_fallback_simple(table) -> list[dict]:
                 key = headers[i] if i < len(headers) else f"col_{i}"
                 row[key] = cell.get_text(strip=True)
             rows.append(row)
-    
+
     return rows
