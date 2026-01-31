@@ -29,3 +29,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# AI Agent Working Notes (not for git)
+.AI_AGENT_NOTES.md
