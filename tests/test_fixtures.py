@@ -1,7 +1,5 @@
 """Test that fixtures load correctly."""
 
-import pytest
-
 
 def test_ratings_fixture_loads(ratings_page):
     """Test ratings fixture loads as BeautifulSoup."""

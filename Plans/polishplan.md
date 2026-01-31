@@ -238,8 +238,8 @@ Automate lint/format checks before commits.
    ```
 
 ### Acceptance criteria
-- [ ] `uv run pre-commit run --all-files` passes
-- [ ] Hooks run automatically on `git commit`
+- [x] `uv run pre-commit run --all-files` passes
+- [x] Hooks run automatically on `git commit`
 
 ---
 

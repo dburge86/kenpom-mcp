@@ -5,14 +5,13 @@ from pathlib import Path
 import pytest
 from bs4 import BeautifulSoup
 
-
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
 
 def load_fixture(filename: str) -> BeautifulSoup:
     """Load an HTML fixture and return BeautifulSoup object."""
     filepath = FIXTURES_DIR / filename
-    with open(filepath, "r") as f:
+    with open(filepath) as f:
         return BeautifulSoup(f.read(), "lxml")
 
 

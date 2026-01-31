@@ -129,6 +129,15 @@ uv run pywrangler dev
 
 # Test with MCP inspector
 npx @modelcontextprotocol/inspector uv --directory . run kenpom-mcp
+
+# Run tests
+uv run pytest tests/
+
+# Install pre-commit hooks
+uv run pre-commit install
+
+# Run pre-commit manually
+uv run pre-commit run --all-files
 ```
 
 ## License

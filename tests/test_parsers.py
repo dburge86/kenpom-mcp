@@ -1,23 +1,20 @@
 """Unit tests for KenPom HTML parsers."""
 
-import pytest
-
 from kenpom_mcp.parsers import (
-    parse_pomeroy_ratings,
+    parse_arenas,
     parse_efficiency,
+    parse_fanmatch,
     parse_four_factors,
-    parse_team_stats,
-    parse_player_stats,
+    parse_game_attrs,
+    parse_hca,
     parse_height,
     parse_kpoy,
-    parse_fanmatch,
-    parse_arenas,
-    parse_hca,
-    parse_game_attrs,
-    parse_program_ratings,
+    parse_player_stats,
     parse_point_distribution,
+    parse_pomeroy_ratings,
+    parse_program_ratings,
+    parse_team_stats,
 )
-
 
 # =============================================================================
 # Test parse_pomeroy_ratings
@@ -272,7 +269,9 @@ def test_parse_arenas_has_attendance_data(arenas_page):
 
     attendance_fields = ["Capacity", "Avg", "Pct"]
     for field in attendance_fields:
-        assert any(field in key for key in first_arena.keys()), f"Missing attendance field containing: {field}"
+        assert any(
+            field in key for key in first_arena.keys()
+        ), f"Missing attendance field containing: {field}"
 
 
 # =============================================================================
