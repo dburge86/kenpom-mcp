@@ -9,12 +9,31 @@ from typing import Any
 
 import httpx
 from bs4 import BeautifulSoup
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://kenpom.com"
 LOGIN_URL = f"{BASE_URL}/handlers/login_handler.php"
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+
+class AuthenticationError(Exception):
+    """Raised when login fails due to invalid credentials."""
+
+    pass
+
+
+class NetworkError(Exception):
+    """Raised when network/connection issues occur during login."""
+
+    pass
 
 
 class KenPomScraper:
@@ -37,31 +56,47 @@ class KenPomScraper:
             )
         return self._client
 
+    @retry(
+        retry=retry_if_exception_type(NetworkError),
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+    )
     async def login(self) -> bool:
-        """Authenticate with KenPom using email/password."""
+        """Authenticate with KenPom using email/password.
+
+        Retries up to 3 times on network errors with exponential backoff.
+        Fails immediately on authentication errors (bad credentials).
+        """
         client = await self._get_client()
 
-        # First hit the homepage to get cookies
-        await client.get(BASE_URL)
+        try:
+            # First hit the homepage to get cookies
+            await client.get(BASE_URL)
 
-        # Submit login form
-        form_data = {
-            "email": self._email,
-            "password": self._password,
-            "submit": "Login!",
-        }
+            # Submit login form
+            form_data = {
+                "email": self._email,
+                "password": self._password,
+                "submit": "Login!",
+            }
 
-        await client.post(LOGIN_URL, data=form_data)
+            await client.post(LOGIN_URL, data=form_data)
 
-        # Verify login by checking homepage
-        response = await client.get(BASE_URL)
+            # Verify login by checking homepage
+            response = await client.get(BASE_URL)
+
+        except (httpx.ConnectError, httpx.TimeoutException, httpx.NetworkError) as e:
+            logger.warning(f"Network error during login: {e}")
+            raise NetworkError(f"Network error during login: {e}") from e
+
         if "Logged in as" in response.text:
             self._logged_in = True
             logger.info("Successfully logged in to KenPom")
             return True
         else:
             logger.error("Login failed - check credentials")
-            raise Exception("Login failed - check your KenPom credentials")
+            raise AuthenticationError("Login failed - check your KenPom credentials")
 
     async def _ensure_logged_in(self):
         """Ensure we have an authenticated session."""

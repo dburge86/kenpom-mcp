@@ -209,9 +209,9 @@ Handle transient network failures gracefully.
 4. Log retry attempts
 
 ### Acceptance criteria
-- [ ] Login retries up to 3 times on network errors
-- [ ] Auth failures (bad credentials) fail immediately without retry
-- [ ] Retry attempts logged at WARNING level
+- [x] Login retries up to 3 times on network errors
+- [x] Auth failures (bad credentials) fail immediately without retry
+- [x] Retry attempts logged at WARNING level
 
 ---
 

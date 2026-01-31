@@ -1,10 +1,16 @@
 """Integration tests for KenPom scraper with mocked HTTP responses."""
 
+import httpx
 import pytest
 from pytest_httpx import HTTPXMock
+from tenacity import RetryError
 
-from kenpom_mcp.scraper import KenPomScraper, BASE_URL, LOGIN_URL
-
+from kenpom_mcp.scraper import (
+    BASE_URL,
+    LOGIN_URL,
+    AuthenticationError,
+    KenPomScraper,
+)
 
 # =============================================================================
 # Mock Cache Implementation
@@ -104,7 +110,7 @@ async def test_login_failure(httpx_mock: HTTPXMock):
     # Create scraper and attempt login
     scraper = KenPomScraper("bad@example.com", "wrongpassword")
 
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(AuthenticationError) as exc_info:
         await scraper.login()
 
     assert "Login failed" in str(exc_info.value)
@@ -408,3 +414,86 @@ async def test_close_cleans_up_client():
     # Close should clean up
     await scraper.close()
     assert scraper._client is None
+
+
+# =============================================================================
+# Test Retry Logic
+# =============================================================================
+
+
+@pytest.mark.asyncio
+async def test_login_retries_on_network_error(httpx_mock: HTTPXMock):
+    """Test that login retries on network errors."""
+    # Mock first two attempts to fail with network errors
+    httpx_mock.add_exception(httpx.ConnectError("Connection failed"), url=BASE_URL)
+    httpx_mock.add_exception(httpx.TimeoutException("Timeout"), url=BASE_URL)
+
+    # Third attempt succeeds
+    httpx_mock.add_response(url=BASE_URL, method="GET", html="<html></html>")
+    httpx_mock.add_response(url=LOGIN_URL, method="POST", html="<html></html>")
+    httpx_mock.add_response(
+        url=BASE_URL,
+        method="GET",
+        html="<html>Logged in as test@example.com</html>",
+    )
+
+    scraper = KenPomScraper("test@example.com", "password123")
+    success = await scraper.login()
+
+    assert success is True
+    assert scraper._logged_in is True
+
+    # Should have made 5 requests total (2 failed + 3 successful)
+    requests = httpx_mock.get_requests()
+    assert len(requests) == 5
+
+    await scraper.close()
+
+
+@pytest.mark.asyncio
+async def test_login_fails_immediately_on_auth_error(httpx_mock: HTTPXMock):
+    """Test that login fails immediately on authentication errors without retry."""
+    # Mock successful network requests but failed authentication
+    httpx_mock.add_response(url=BASE_URL, method="GET", html="<html></html>")
+    httpx_mock.add_response(url=LOGIN_URL, method="POST", html="<html></html>")
+    httpx_mock.add_response(
+        url=BASE_URL,
+        method="GET",
+        html="<html>Please log in</html>",  # No "Logged in as"
+    )
+
+    scraper = KenPomScraper("bad@example.com", "wrongpassword")
+
+    with pytest.raises(AuthenticationError) as exc_info:
+        await scraper.login()
+
+    assert "Login failed" in str(exc_info.value)
+    assert scraper._logged_in is False
+
+    # Should only make 3 requests (no retries on auth failure)
+    requests = httpx_mock.get_requests()
+    assert len(requests) == 3
+
+    await scraper.close()
+
+
+@pytest.mark.asyncio
+async def test_login_gives_up_after_max_retries(httpx_mock: HTTPXMock):
+    """Test that login gives up after 3 retry attempts."""
+    # Mock exactly 3 attempts to fail with network errors
+    for _ in range(3):
+        httpx_mock.add_exception(httpx.ConnectError("Connection failed"), url=BASE_URL)
+
+    scraper = KenPomScraper("test@example.com", "password123")
+
+    # After 3 retries, tenacity raises RetryError wrapping the NetworkError
+    with pytest.raises(RetryError):
+        await scraper.login()
+
+    assert scraper._logged_in is False
+
+    # Should have made exactly 3 attempts (stop_after_attempt(3))
+    requests = httpx_mock.get_requests()
+    assert len(requests) == 3
+
+    await scraper.close()

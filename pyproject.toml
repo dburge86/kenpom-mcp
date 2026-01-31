@@ -13,6 +13,7 @@ dependencies = [
     "uvicorn>=0.30.0",
     "starlette>=0.40.0",
     "python-dotenv>=1.0.0",
+    "tenacity>=9.0.0",
 ]
 
 [dependency-groups]
