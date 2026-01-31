@@ -14,22 +14,9 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 
-from .parsers import (
-    parse_arenas,
-    parse_efficiency,
-    parse_fanmatch,
-    parse_four_factors,
-    parse_game_attrs,
-    parse_hca,
-    parse_height,
-    parse_kpoy,
-    parse_player_stats,
-    parse_point_distribution,
-    parse_pomeroy_ratings,
-    parse_program_ratings,
-    parse_team_stats,
-)
 from .scraper import KenPomScraper
+from .tools import call_tool as call_tool_handler
+from .tools import get_all_tools
 
 load_dotenv()
 
@@ -53,177 +40,14 @@ def get_scraper() -> KenPomScraper:
     return _scraper
 
 
-# MCP Tool definitions
-TOOLS = [
-    {
-        "name": "get_ratings",
-        "description": "Get Pomeroy ratings for all teams",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "season": {"type": "string", "description": "Season year (e.g., '2024')"}
-            },
-        },
-    },
-    {
-        "name": "get_efficiency",
-        "description": "Get efficiency and tempo stats",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_four_factors",
-        "description": "Get Four Factors stats",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_team_stats",
-        "description": "Get miscellaneous team stats",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "defense": {"type": "boolean", "description": "If true, get defensive stats"},
-                "season": {"type": "string", "description": "Season year"},
-            },
-        },
-    },
-    {
-        "name": "get_player_stats",
-        "description": "Get player leaders by metric",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "metric": {"type": "string", "description": "Metric to rank by (eFG, ORtg, etc.)"},
-                "season": {"type": "string", "description": "Season year"},
-                "conference": {"type": "string", "description": "Conference filter"},
-            },
-        },
-    },
-    {
-        "name": "get_height",
-        "description": "Get height/experience data",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_fanmatch",
-        "description": "Get game predictions for a date",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"date": {"type": "string", "description": "Date in YYYY-MM-DD format"}},
-        },
-    },
-    {
-        "name": "get_arenas",
-        "description": "Get arena information",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_game_attrs",
-        "description": "Get top games by attribute",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "metric": {
-                    "type": "string",
-                    "description": "Attribute (Excitement, Tension, etc.)",
-                },
-                "season": {"type": "string", "description": "Season year"},
-            },
-        },
-    },
-    {
-        "name": "get_program_ratings",
-        "description": "Get historical program ratings",
-        "inputSchema": {"type": "object", "properties": {}},
-    },
-    {
-        "name": "get_kpoy",
-        "description": "Get KPOY standings",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_point_distribution",
-        "description": "Get point distribution",
-        "inputSchema": {
-            "type": "object",
-            "properties": {"season": {"type": "string", "description": "Season year"}},
-        },
-    },
-    {
-        "name": "get_hca",
-        "description": "Get home court advantage data",
-        "inputSchema": {"type": "object", "properties": {}},
-    },
-]
+# MCP Tool definitions - Generated from unified registry
+TOOLS = [tool.to_mcp_schema() for tool in get_all_tools()]
 
 
 async def call_tool(name: str, arguments: dict) -> Any:
     """Execute a tool and return its result."""
     scraper = get_scraper()
-
-    if name == "get_ratings":
-        soup = await scraper.get_ratings_page(arguments.get("season"))
-        return parse_pomeroy_ratings(soup)
-    elif name == "get_efficiency":
-        soup = await scraper.get_efficiency_page(arguments.get("season"))
-        return parse_efficiency(soup)
-    elif name == "get_four_factors":
-        soup = await scraper.get_four_factors_page(arguments.get("season"))
-        return parse_four_factors(soup)
-    elif name == "get_team_stats":
-        soup = await scraper.get_team_stats_page(
-            defense=arguments.get("defense", False), season=arguments.get("season")
-        )
-        return parse_team_stats(soup, defense=arguments.get("defense", False))
-    elif name == "get_player_stats":
-        soup = await scraper.get_player_stats_page(
-            metric=arguments.get("metric", "eFG"),
-            season=arguments.get("season"),
-            conf=arguments.get("conference"),
-        )
-        return parse_player_stats(soup)
-    elif name == "get_height":
-        soup = await scraper.get_height_page(arguments.get("season"))
-        return parse_height(soup)
-    elif name == "get_fanmatch":
-        soup = await scraper.get_fanmatch_page(arguments.get("date"))
-        return parse_fanmatch(soup)
-    elif name == "get_arenas":
-        soup = await scraper.get_arenas_page(arguments.get("season"))
-        return parse_arenas(soup)
-    elif name == "get_game_attrs":
-        soup = await scraper.get_game_attrs_page(
-            metric=arguments.get("metric", "Excitement"), season=arguments.get("season")
-        )
-        return parse_game_attrs(soup)
-    elif name == "get_program_ratings":
-        soup = await scraper.get_program_ratings_page()
-        return parse_program_ratings(soup)
-    elif name == "get_kpoy":
-        soup = await scraper.get_kpoy_page(arguments.get("season"))
-        return parse_kpoy(soup)
-    elif name == "get_point_distribution":
-        soup = await scraper.get_point_dist_page(arguments.get("season"))
-        return parse_point_distribution(soup)
-    elif name == "get_hca":
-        soup = await scraper.get_hca_page()
-        return parse_hca(soup)
-    else:
-        raise ValueError(f"Unknown tool: {name}")
+    return await call_tool_handler(scraper, name, arguments)
 
 
 async def health(request: Request) -> JSONResponse:

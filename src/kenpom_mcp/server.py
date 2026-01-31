@@ -19,22 +19,8 @@ from mcp.server.fastmcp import FastMCP
 _package_dir = Path(__file__).parent.parent.parent
 load_dotenv(_package_dir / ".env")
 
-from .parsers import (
-    parse_arenas,
-    parse_efficiency,
-    parse_fanmatch,
-    parse_four_factors,
-    parse_game_attrs,
-    parse_hca,
-    parse_height,
-    parse_kpoy,
-    parse_player_stats,
-    parse_point_distribution,
-    parse_pomeroy_ratings,
-    parse_program_ratings,
-    parse_team_stats,
-)
 from .scraper import KenPomScraper
+from .tools import call_tool as call_tool_handler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -92,8 +78,7 @@ async def get_ratings(season: str | None = None) -> str:
         JSON array of team ratings data.
     """
     scraper = get_scraper()
-    soup = await scraper.get_ratings_page(season)
-    data = parse_pomeroy_ratings(soup)
+    data = await call_tool_handler(scraper, "get_ratings", {"season": season})
     return to_json(data)
 
 
@@ -113,8 +98,7 @@ async def get_efficiency(season: str | None = None) -> str:
         JSON array of efficiency data for all teams.
     """
     scraper = get_scraper()
-    soup = await scraper.get_efficiency_page(season)
-    data = parse_efficiency(soup)
+    data = await call_tool_handler(scraper, "get_efficiency", {"season": season})
     return to_json(data)
 
 
@@ -137,8 +121,7 @@ async def get_four_factors(season: str | None = None) -> str:
         JSON array of Four Factors data for all teams.
     """
     scraper = get_scraper()
-    soup = await scraper.get_four_factors_page(season)
-    data = parse_four_factors(soup)
+    data = await call_tool_handler(scraper, "get_four_factors", {"season": season})
     return to_json(data)
 
 
@@ -159,8 +142,9 @@ async def get_team_stats(defense: bool = False, season: str | None = None) -> st
         JSON array of team stats (offense or defense based on parameter).
     """
     scraper = get_scraper()
-    soup = await scraper.get_team_stats_page(defense=defense, season=season)
-    data = parse_team_stats(soup, defense=defense)
+    data = await call_tool_handler(
+        scraper, "get_team_stats", {"defense": defense, "season": season}
+    )
     return to_json(data)
 
 
@@ -184,8 +168,9 @@ async def get_player_stats(
         JSON array of player stats ranked by the specified metric.
     """
     scraper = get_scraper()
-    soup = await scraper.get_player_stats_page(metric=metric, season=season, conf=conference)
-    data = parse_player_stats(soup)
+    data = await call_tool_handler(
+        scraper, "get_player_stats", {"metric": metric, "season": season, "conference": conference}
+    )
     return to_json(data)
 
 
@@ -205,8 +190,7 @@ async def get_height(season: str | None = None) -> str:
         JSON array of height/experience data for all teams.
     """
     scraper = get_scraper()
-    soup = await scraper.get_height_page(season)
-    data = parse_height(soup)
+    data = await call_tool_handler(scraper, "get_height", {"season": season})
     return to_json(data)
 
 
@@ -226,8 +210,7 @@ async def get_fanmatch(date: str | None = None) -> str:
         JSON object with games, predictions, and daily statistics.
     """
     scraper = get_scraper()
-    soup = await scraper.get_fanmatch_page(date)
-    data = parse_fanmatch(soup)
+    data = await call_tool_handler(scraper, "get_fanmatch", {"date": date})
     return to_json(data)
 
 
@@ -246,8 +229,7 @@ async def get_arenas(season: str | None = None) -> str:
         JSON array of arena data.
     """
     scraper = get_scraper()
-    soup = await scraper.get_arenas_page(season)
-    data = parse_arenas(soup)
+    data = await call_tool_handler(scraper, "get_arenas", {"season": season})
     return to_json(data)
 
 
@@ -268,8 +250,7 @@ async def get_game_attrs(metric: str = "Excitement", season: str | None = None) 
         JSON array of top games for the specified attribute.
     """
     scraper = get_scraper()
-    soup = await scraper.get_game_attrs_page(metric=metric, season=season)
-    data = parse_game_attrs(soup)
+    data = await call_tool_handler(scraper, "get_game_attrs", {"metric": metric, "season": season})
     return to_json(data)
 
 
@@ -285,8 +266,7 @@ async def get_program_ratings() -> str:
         JSON array of program ratings.
     """
     scraper = get_scraper()
-    soup = await scraper.get_program_ratings_page()
-    data = parse_program_ratings(soup)
+    data = await call_tool_handler(scraper, "get_program_ratings", {})
     return to_json(data)
 
 
@@ -305,8 +285,7 @@ async def get_kpoy(season: str | None = None) -> str:
         JSON array with KPOY standings (may include multiple tables).
     """
     scraper = get_scraper()
-    soup = await scraper.get_kpoy_page(season)
-    data = parse_kpoy(soup)
+    data = await call_tool_handler(scraper, "get_kpoy", {"season": season})
     return to_json(data)
 
 
@@ -326,8 +305,7 @@ async def get_point_distribution(season: str | None = None) -> str:
         JSON array of point distribution data for all teams.
     """
     scraper = get_scraper()
-    soup = await scraper.get_point_dist_page(season)
-    data = parse_point_distribution(soup)
+    data = await call_tool_handler(scraper, "get_point_distribution", {"season": season})
     return to_json(data)
 
 
@@ -342,8 +320,7 @@ async def get_hca() -> str:
         JSON array of home court advantage data.
     """
     scraper = get_scraper()
-    soup = await scraper.get_hca_page()
-    data = parse_hca(soup)
+    data = await call_tool_handler(scraper, "get_hca", {})
     return to_json(data)
 
 
