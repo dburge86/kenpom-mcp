@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** January 30, 2026 (Task 7 of polish plan)
-**Decision Maker:** David Burgess
+**Decision Maker:** @dburge86
 **Context:** Adding network resilience to scraper login
 
 ---

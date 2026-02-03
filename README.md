@@ -1,12 +1,15 @@
-# KenPom MCP Server
+# KenPom MCP Server 🏀
 
 [![CI](https://github.com/dburge86/kenpom-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/dburge86/kenpom-mcp/actions/workflows/ci.yml)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
 Production-ready async MCP server for KenPom basketball analytics with Google Cloud Run support.
 
-> **Note**: Requires a paid KenPom subscription (email/password login, no API key needed).
+> **Note**: Requires a paid KenPom subscription ([kenpom.com](https://kenpom.com)) - email/password login, no API key needed.
 
-## Project Status: Production Ready ✅
+## ✨ Project Status: Production Ready
 
 - ✅ **100% Test Coverage** — 61 tests covering all parsers and scraper
 - ✅ **CI/CD Pipeline** — GitHub Actions running tests, linting, and formatting
@@ -185,7 +188,9 @@ uv run ruff format src/ tests/
 uv run pre-commit run --all-files
 ```
 
-## Contributing
+## 🤝 Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 This project uses:
 - **pytest** for testing with async support
@@ -195,6 +200,26 @@ This project uses:
 
 All PRs must pass tests and linting checks.
 
-## License
+## 🔒 Security
 
-MIT
+For security issues, please see [SECURITY.md](SECURITY.md) for responsible disclosure guidelines.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **KenPom** ([kenpom.com](https://kenpom.com)) - Ken Pomeroy's advanced basketball analytics
+- **FastMCP** ([github.com/jlowin/fastmcp](https://github.com/jlowin/fastmcp)) - MCP server framework
+- **MCP Protocol** ([modelcontextprotocol.io](https://modelcontextprotocol.io)) - Model Context Protocol specification
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/dburge86/kenpom-mcp/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/dburge86/kenpom-mcp/discussions)
+- **Security**: See [SECURITY.md](SECURITY.md)
+
+---
+
+**Made with ❤️ for basketball analytics enthusiasts**

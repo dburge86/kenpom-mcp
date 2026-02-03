@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** January 30, 2026 (Task 6 of polish plan)
-**Decision Maker:** David Burgess
+**Decision Maker:** @dburge86
 **Context:** Addressing code duplication between STDIO and HTTP/SSE transports
 
 ---

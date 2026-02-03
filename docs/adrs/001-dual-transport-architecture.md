@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** January 2026 (pre-polish)
-**Decision Maker:** David Burgess
+**Decision Maker:** @dburge86
 
 ---
 
