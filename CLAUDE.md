@@ -126,7 +126,7 @@ uv run pre-commit run --all-files
 - **CI/CD**: Active and green on every push
 - **Dependencies**: Stable, modern Python 3.12+ with async-first design, pandas>=2.0.0 added
 - **Maintenance**: Low overhead, single source of truth for tool definitions
-- **Parser Status**: 6 of 13 tools fully operational with real KenPom data (efficiency + four_factors rewritten)
+- **Parser Status**: ALL 13 tools fully operational with real KenPom data
 
 ### Key Decisions & Patterns Established
 
@@ -163,22 +163,20 @@ uv run pre-commit run --all-files
 - ✅ Tested with live BYU data - 365 teams parsed successfully
 - ✅ Committed and pushed to GitHub (commit: cd5b5e2)
 
-**Verified Working (6/13 tools):**
+**All 13 Tools Verified Working:**
 1. ✅ `get_ratings` - Team rankings and adjusted efficiency
 2. ✅ `get_efficiency` - Tempo and offensive/defensive ratings
 3. ✅ `get_four_factors` - Four Factors breakdown
-8. ✅ `get_fanmatch` - Daily game predictions
-9. ✅ `get_arenas` - Arena information
-11. ✅ `get_program_ratings` - Historical program rankings
-
-**Need Parser Updates (7/13 tools):**
-- `get_team_stats` (offense/defense)
-- `get_player_stats`
-- `get_height`
-- `get_point_distribution`
-- `get_hca`
-- `get_kpoy`
-- `get_game_attrs` (works but data-dependent)
+4. ✅ `get_team_stats` - Misc team stats (offense + defense)
+5. ✅ `get_player_stats` - Player leaders by metric
+6. ✅ `get_height` - Height/experience data with positional breakdown
+7. ✅ `get_fanmatch` - Daily game predictions
+8. ✅ `get_arenas` - Arena information
+9. ✅ `get_game_attrs` - Top games by attribute (excitement, upsets, etc.)
+10. ✅ `get_program_ratings` - Historical program rankings
+11. ✅ `get_kpoy` - Player of the Year standings + Game MVP leaders
+12. ✅ `get_point_distribution` - Scoring breakdown (offense + defense)
+13. ✅ `get_hca` - Home court advantage with model inputs
 
 **Pattern Established for Parser Fixes:**
 ```python
@@ -218,7 +216,7 @@ def parse_example(soup: BeautifulSoup) -> list[dict]:
 - Column counts vary by page - inspect with debug script first
 
 ### Next Steps
-- [ ] **Fix remaining 7 parsers** using the established pattern (stats.py and misc.py)
+- [x] **Fix remaining 7 parsers** using the established pattern (stats.py and misc.py) - DONE
 - [ ] **Update test fixtures** to match real KenPom HTML structure (optional)
 - [ ] **Document parser pattern** in contributing guide for future maintainers
 - [ ] **Optional**: Document self-hosted HTTP deployment guide if users request it
@@ -243,9 +241,13 @@ def parse_example(soup: BeautifulSoup) -> list[dict]:
 ### Parser Implementation Pattern (Post-2026-02-09)
 - **Avoid pandas** for KenPom parsing - it struggles with complex multi-row headers
 - **Use direct BeautifulSoup** cell-by-cell extraction (see `parsers/efficiency.py`)
-- **Skip first 2 rows** of table to bypass KenPom's 2-row header structure
-- **Count columns carefully** - inspect real HTML first (efficiency=18, four_factors=24)
-- **Extract team names from `<a>` tags** for proper link parsing
+- **Header rows vary by page**: some have 1 header row (teamstats, height, game_attrs, player_stats), some have 2 (efficiency, four_factors, point_distribution, hca)
+- **Column counts by page**: efficiency=18, four_factors=24, team_stats=22, height=22, point_distribution=14, hca=14, player_stats=7, game_attrs=7, kpoy=3
+- **Extract team/player names from `<a>` tags** for proper link parsing
 - **Filter out mid-table headers** by checking if team name == "Team"
 - **Add Rank field** derived from row position (not in HTML)
-- See `parse_efficiency()` in `efficiency.py` as the reference implementation
+
+### Scraper URL Notes (Post-2026-02-09)
+- **Defense teamstats**: Use `od=d` param (NOT `s=RankOppeFG_Pct` which redirects to index)
+- **Player stats sort**: Use `s={metric}` (NOT `s=Rank{metric}` which redirects to index)
+- KenPom changed URL parameter conventions; always verify with live fetch if pages redirect
