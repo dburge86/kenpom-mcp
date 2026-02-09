@@ -168,7 +168,7 @@ class KenPomScraper:
         if season:
             params["y"] = season
         if defense:
-            params["s"] = "RankOppeFG_Pct"
+            params["od"] = "d"
         cache_key = f"team_stats:{'def' if defense else 'off'}:{season or 'current'}"
         return await self.fetch_cached(cache_key, "teamstats.php", params, ttl=300)
 
@@ -176,7 +176,7 @@ class KenPomScraper:
         self, metric: str = "eFG", season: str | None = None, conf: str | None = None
     ) -> BeautifulSoup:
         """Fetch player stats page."""
-        params = {"s": f"Rank{metric}"}
+        params = {"s": metric}
         if season:
             params["y"] = season
         if conf:
