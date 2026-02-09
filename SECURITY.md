@@ -12,4 +12,4 @@ Instead, report via:
 - Never commit your `.env` file (it's gitignored)
 - The `.env.example` file contains only placeholders
 - All credentials are loaded from environment variables
-- Cloud Run deployment uses API key authentication
+- The HTTP server supports API key authentication for remote deployments

@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 
-Production-ready async MCP server for KenPom basketball analytics with Google Cloud Run support.
+Production-ready async MCP server for KenPom basketball analytics.
 
 > **Note**: Requires a paid KenPom subscription ([kenpom.com](https://kenpom.com)) - email/password login, no API key needed.
 
@@ -15,12 +15,12 @@ Production-ready async MCP server for KenPom basketball analytics with Google Cl
 - ✅ **CI/CD Pipeline** — GitHub Actions running tests, linting, and formatting
 - ✅ **Code Quality** — Pre-commit hooks with ruff enforcement
 - ✅ **Network Resilience** — Retry logic with exponential backoff
-- ✅ **Cloud Deployed** — Running on Google Cloud Run with free tier protection
+- ✅ **Dual Transport** — Local (STDIO) and self-hosted HTTP/SSE support
 
 ## Features
 
 - 🚀 **Async Architecture** — Built with httpx for non-blocking requests
-- ☁️ **Google Cloud Run Ready** — Deploy globally with zero cold starts
+- ☁️ **Self-Hostable** — Optional HTTP/SSE server for remote access
 - 💾 **Smart Caching** — KV-based caching to reduce scraping frequency
 - 🔧 **Dual Transport** — Local (STDIO) and Remote (SSE) support
 - 📊 **13+ Data Tools** — Full coverage of KenPom stats
@@ -34,38 +34,6 @@ cd /path/to/mcp_kenpom
 cp .env.example .env  # Add your credentials
 uv sync
 uv run kenpom-mcp
-```
-
-## Cloud Deployment (Google Cloud Run)
-
-The service is deployed at:
-
-```
-https://kenpom-mcp-965342935330.us-central1.run.app
-```
-
-**Free Tier Protection:**
-
-- Min instances: 0 (scales to zero when idle)
-- Max instances: 1 (prevents runaway scaling)
-- Memory: 256Mi
-- CPU: 1
-
-### Test the deployment:
-
-```bash
-# Health check (no auth required)
-curl https://kenpom-mcp-965342935330.us-central1.run.app/health
-
-# List tools (requires API key)
-curl -H "X-API-Key: YOUR_API_KEY" \
-  https://kenpom-mcp-965342935330.us-central1.run.app/tools
-
-# Call a tool
-curl -X POST -H "X-API-Key: YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"method": "get_fanmatch", "params": {}, "id": 1}' \
-  https://kenpom-mcp-965342935330.us-central1.run.app/mcp
 ```
 
 ## MCP Client Configuration
@@ -83,7 +51,9 @@ curl -X POST -H "X-API-Key: YOUR_API_KEY" \
 }
 ```
 
-### Remote Mode (Cloud Run)
+### Remote Mode (Self-Hosted)
+
+If you run the HTTP server on your own infrastructure:
 
 ```json
 {
@@ -92,7 +62,7 @@ curl -X POST -H "X-API-Key: YOUR_API_KEY" \
       "command": "npx",
       "args": [
         "mcp-remote",
-        "https://kenpom-mcp-965342935330.us-central1.run.app/sse"
+        "https://your-server-url/sse"
       ]
     }
   }

@@ -1,7 +1,7 @@
 # KenPom MCP Server
 
 ## Purpose
-Production-ready async MCP server that scrapes KenPom basketball analytics and exposes 13 data tools via STDIO (local) and HTTP/SSE (remote) transports. Deployed on Google Cloud Run for global access.
+Production-ready async MCP server that scrapes KenPom basketball analytics and exposes 13 data tools via STDIO (local) and HTTP/SSE (remote) transports.
 
 ## Project Status: Production Ready ✅
 - 100% test coverage (61 tests)
@@ -9,7 +9,6 @@ Production-ready async MCP server that scrapes KenPom basketball analytics and e
 - Pre-commit hooks enforcing code quality
 - Network resilience with retry logic
 - Unified tool registry (no code duplication)
-- Live deployment on Google Cloud Run
 
 ## Tech Stack
 - **Python 3.12+** with uv package manager
@@ -47,12 +46,6 @@ tests/
 - **pyproject.toml** - Dependencies and project config
 - **.pre-commit-config.yaml** - Pre-commit hooks (ruff)
 - **.github/workflows/ci.yml** - CI/CD pipeline
-
-## Production Deployment
-- **URL**: https://kenpom-mcp-965342935330.us-central1.run.app
-- **Platform**: Google Cloud Run
-- **Config**: Min 0 instances, Max 1 (free tier protection)
-- **Auth**: API key via X-API-Key header or api_key query param
 
 ## Development Setup
 ```bash
