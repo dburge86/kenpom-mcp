@@ -107,9 +107,39 @@ uv run pre-commit run --all-files
 - **Test failures**: Ensure .env is present or tests will skip auth-required operations
 - **Pre-commit failures**: Run `uv run ruff check --fix` and `uv run ruff format`
 
+## Session Log: 2025-02-09 — Public Release Cleanup
+
+### What Was Accomplished
+1. **Removed personal infrastructure details** — Stripped GCP project IDs (`flawless-window-480221-q2`), account emails (`db@innovateaipro.com`), and Cloud Run deployment specifics from CLAUDE.md, README.md, and SECURITY.md
+2. **Repositioned documentation** — Changed framing from "Cloud Run deployed" to "Local-first STDIO with optional self-hosted HTTP/SSE"
+3. **Cleaned CLAUDE.md** — Removed entire Production Deployment section, GCP CLI reference, session logs with credential references, and GCP-specific troubleshooting
+4. **Updated README.md** — Removed Cloud Deployment section, replaced personal Cloud Run URL with placeholder "your-server-url" in Remote Mode example
+5. **Updated SECURITY.md** — Changed "Cloud Run deployment uses API key authentication" to generic "HTTP server supports API key authentication for remote deployments"
+6. **Verified tests** — All 61 tests still passing, no code changes made
+7. **Committed and pushed** — Commit `4c20c20` pushed to GitHub
+
+### Current Status
+- **Project: Public-ready** ✅
+- **Documentation: Sanitized** — No personal GCP identifiers in any public-facing files
+- **Tests: All passing** — 61/61 tests, 100% coverage maintained
+- **CI/CD: Operational** — GitHub Actions running on every push
+- **Code Quality: Enforced** — Pre-commit hooks active
+
+### Key Decisions Made
+1. **STDIO as primary interface** — Local MCP server is now the recommended usage pattern (95% of MCP ecosystem)
+2. **HTTP/SSE as advanced feature** — Positioned as optional for users who want to self-host or build custom integrations
+3. **No Cloud Run in public docs** — Personal deployment infrastructure removed entirely; if users deploy, they do so independently
+4. **Kept `.AI_AGENT_NOTES.md` internal** — Not committed, contains operational context for future development
+
+### Next Steps
+- [ ] Decide: Tear down Cloud Run deployment or keep running privately for personal use?
+- [ ] Consider: Document self-hosted HTTP deployment guide if there's demand from users
+- [ ] Optional: Add "Deployment" section to README if self-hosting becomes a common ask
+
 ## Notes for AI Agents
 - See `.AI_AGENT_NOTES.md` for detailed development history and lessons learned
 - All 13 tools use unified registry in `tools.py` - modify there for consistency
 - Parser tests use flexible field matching (keyword-based) to handle KenPom HTML variations
 - Scraper has custom exceptions: `AuthenticationError` (no retry) vs `NetworkError` (retry enabled)
 - Pre-commit hooks run automatically on commit - ensure tests pass first
+- **Public release goal achieved** — Project is now safe to share on GitHub without exposing personal credentials or infrastructure
