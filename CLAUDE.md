@@ -107,7 +107,31 @@ uv run pre-commit run --all-files
 - **Test failures**: Ensure .env is present or tests will skip auth-required operations
 - **Pre-commit failures**: Run `uv run ruff check --fix` and `uv run ruff format`
 
-## Session Log: 2025-02-09 — Public Release Cleanup
+## Session Log: 2026-02-09 — Cloud Run Teardown
+
+### What Was Accomplished
+1. **Deleted Cloud Run deployment** — Ran `gcloud run services delete kenpom-mcp` to permanently shut down the service
+2. **Cleaned .AI_AGENT_NOTES.md** — Removed Cloud Run URL (kenpom-mcp-965342935330.us-central1.run.app), updated deployment sections to reference "self-hosted" instead of Cloud Run
+3. **Updated internal documentation** — Changed framing from "Live on Google Cloud Run" to "self-hosted deployments"
+4. **Verified no personal identifiers remaining** — Confirmed no GCP project IDs, account emails, or Cloud Run URLs remain in any files
+
+### Current Status
+- **Cloud Run: Torn down** ✅
+- **Documentation: Updated** — All references changed to generic self-hosted guidance
+- **Tests: All passing** — 61/61 tests, no code changes made
+- **Project: 100% local-first** — STDIO is primary interface, HTTP/SSE optional for self-hosting
+
+### Key Decisions Made
+1. **No cloud infrastructure** — Project is now fully local/self-hosted with no managed service dependencies
+2. **Generic deployment guidance** — Documentation describes self-hosting without platform-specific instructions
+3. **HTTP server optional** — Positioned as advanced feature for users who need remote access
+
+### Next Steps
+- None required — Teardown complete
+
+---
+
+## Session Log: 2026-02-09 — Public Release Cleanup
 
 ### What Was Accomplished
 1. **Removed personal infrastructure details** — Stripped GCP project IDs (`flawless-window-480221-q2`), account emails (`db@innovateaipro.com`), and Cloud Run deployment specifics from CLAUDE.md, README.md, and SECURITY.md
@@ -132,7 +156,7 @@ uv run pre-commit run --all-files
 4. **Kept `.AI_AGENT_NOTES.md` internal** — Not committed, contains operational context for future development
 
 ### Next Steps
-- [ ] Decide: Tear down Cloud Run deployment or keep running privately for personal use?
+- ✅ ~~Tear down Cloud Run deployment~~ — **Completed 2026-02-09**
 - [ ] Consider: Document self-hosted HTTP deployment guide if there's demand from users
 - [ ] Optional: Add "Deployment" section to README if self-hosting becomes a common ask
 
