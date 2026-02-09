@@ -324,6 +324,118 @@ async def get_hca() -> str:
     return to_json(data)
 
 
+@mcp.tool()
+async def get_schedule(team: str, season: str | None = None) -> str:
+    """
+    Get a team's game schedule and results.
+
+    Returns the full schedule with game dates, opponents, results,
+    rankings, locations, and records.
+
+    Args:
+        team: Team name (required). Examples: 'BYU', 'Duke', 'North Carolina'.
+        season: Optional season year (e.g., "2024"). Defaults to current season.
+                Earliest available: 1999.
+
+    Returns:
+        JSON array of scheduled/completed games.
+    """
+    scraper = get_scraper()
+    data = await call_tool_handler(scraper, "get_schedule", {"team": team, "season": season})
+    return to_json(data)
+
+
+@mcp.tool()
+async def get_scouting_report(
+    team: str, season: str | None = None, conference_only: bool = False
+) -> str:
+    """
+    Get detailed scouting report for a team (37 stats with ranks).
+
+    Returns offensive and defensive stats with national ranks covering
+    efficiency, tempo, Four Factors, shooting percentages, and point distribution.
+
+    Args:
+        team: Team name (required). Examples: 'BYU', 'Duke', 'North Carolina'.
+        season: Optional season year (e.g., "2024"). Defaults to current season.
+        conference_only: If True, returns conference-only stats. Default: False.
+
+    Returns:
+        JSON object mapping stat names to {value, rank} objects.
+    """
+    scraper = get_scraper()
+    data = await call_tool_handler(
+        scraper,
+        "get_scouting_report",
+        {"team": team, "season": season, "conference_only": conference_only},
+    )
+    return to_json(data)
+
+
+@mcp.tool()
+async def get_conference_standings(conference: str, season: str | None = None) -> str:
+    """
+    Get conference standings with team records and ratings.
+
+    Returns standings with overall/conference records, projected records,
+    net rating, offensive/defensive ratings, tempo, and conference SOS.
+
+    Args:
+        conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC', 'BE'.
+        season: Optional season year (e.g., "2024"). Defaults to current season.
+
+    Returns:
+        JSON array of conference standings.
+    """
+    scraper = get_scraper()
+    data = await call_tool_handler(
+        scraper, "get_conference_standings", {"conference": conference, "season": season}
+    )
+    return to_json(data)
+
+
+@mcp.tool()
+async def get_conference_offense(conference: str, season: str | None = None) -> str:
+    """
+    Get conference offensive stats for all teams in a conference.
+
+    Returns offensive efficiency, eFG%, TO%, OR%, FTR, 2P%, 3P%, FT%, and tempo.
+
+    Args:
+        conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC'.
+        season: Optional season year (e.g., "2024"). Defaults to current season.
+
+    Returns:
+        JSON array of conference offensive stats.
+    """
+    scraper = get_scraper()
+    data = await call_tool_handler(
+        scraper, "get_conference_offense", {"conference": conference, "season": season}
+    )
+    return to_json(data)
+
+
+@mcp.tool()
+async def get_conference_defense(conference: str, season: str | None = None) -> str:
+    """
+    Get conference defensive stats for all teams in a conference.
+
+    Returns defensive efficiency, eFG%, TO%, OR%, FTR, 2P%, 3P%, Blk%, and Stl%.
+
+    Args:
+        conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC'.
+        season: Optional season year (e.g., "2024"). Defaults to current season.
+
+    Returns:
+        JSON array of conference defensive stats.
+    """
+    scraper = get_scraper()
+    data = await call_tool_handler(
+        scraper, "get_conference_defense", {"conference": conference, "season": season}
+    )
+    return to_json(data)
+
+
 def main():
     """Run the MCP server locally via STDIO."""
     import sys

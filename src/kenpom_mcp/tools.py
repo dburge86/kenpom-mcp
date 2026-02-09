@@ -9,6 +9,9 @@ from typing import Any
 
 from .parsers import (
     parse_arenas,
+    parse_conference_defense,
+    parse_conference_offense,
+    parse_conference_standings,
     parse_efficiency,
     parse_fanmatch,
     parse_four_factors,
@@ -20,6 +23,8 @@ from .parsers import (
     parse_point_distribution,
     parse_pomeroy_ratings,
     parse_program_ratings,
+    parse_schedule,
+    parse_scouting_report,
     parse_team_stats,
 )
 from .scraper import KenPomScraper
@@ -138,6 +143,51 @@ async def handle_get_hca(scraper: KenPomScraper, args: dict) -> list:
     """Get home court advantage data."""
     soup = await scraper.get_hca_page()
     return parse_hca(soup)
+
+
+async def handle_get_schedule(scraper: KenPomScraper, args: dict) -> list:
+    """Get team schedule."""
+    team = args.get("team")
+    if not team:
+        raise ValueError("team parameter is required")
+    soup = await scraper.get_team_page(team, args.get("season"))
+    return parse_schedule(soup)
+
+
+async def handle_get_scouting_report(scraper: KenPomScraper, args: dict) -> dict:
+    """Get team scouting report."""
+    team = args.get("team")
+    if not team:
+        raise ValueError("team parameter is required")
+    soup = await scraper.get_team_page(team, args.get("season"))
+    return parse_scouting_report(soup, conference_only=args.get("conference_only", False))
+
+
+async def handle_get_conference_standings(scraper: KenPomScraper, args: dict) -> list:
+    """Get conference standings."""
+    conf = args.get("conference")
+    if not conf:
+        raise ValueError("conference parameter is required")
+    soup = await scraper.get_conference_page(conf, args.get("season"))
+    return parse_conference_standings(soup)
+
+
+async def handle_get_conference_offense(scraper: KenPomScraper, args: dict) -> list:
+    """Get conference offensive stats."""
+    conf = args.get("conference")
+    if not conf:
+        raise ValueError("conference parameter is required")
+    soup = await scraper.get_conference_page(conf, args.get("season"))
+    return parse_conference_offense(soup)
+
+
+async def handle_get_conference_defense(scraper: KenPomScraper, args: dict) -> list:
+    """Get conference defensive stats."""
+    conf = args.get("conference")
+    if not conf:
+        raise ValueError("conference parameter is required")
+    soup = await scraper.get_conference_page(conf, args.get("season"))
+    return parse_conference_defense(soup)
 
 
 # Tool Registry - Single source of truth for all tools
@@ -489,6 +539,174 @@ Returns historical home court advantage statistics for all teams.
 
 Returns:
     JSON array of home court advantage data.
+""",
+    ),
+    "get_schedule": ToolDefinition(
+        name="get_schedule",
+        description="Get a team's game schedule and results",
+        handler=handle_get_schedule,
+        input_schema={
+            "type": "object",
+            "properties": {
+                "team": {
+                    "type": "string",
+                    "description": "Team name (e.g., 'BYU', 'Duke', 'North Carolina'). Required.",
+                },
+                "season": {
+                    "type": "string",
+                    "description": "Season year (e.g., '2024'). Defaults to current season.",
+                },
+            },
+            "required": ["team"],
+        },
+        docstring="""
+Get a team's game schedule and results.
+
+Returns the full schedule with game dates, opponents, results,
+rankings, locations, and records.
+
+Args:
+    team: Team name (required). Examples: 'BYU', 'Duke', 'North Carolina'.
+    season: Optional season year (e.g., "2024"). Defaults to current season.
+            Earliest available: 1999.
+
+Returns:
+    JSON array of scheduled/completed games.
+""",
+    ),
+    "get_scouting_report": ToolDefinition(
+        name="get_scouting_report",
+        description="Get detailed scouting report for a team (37 stats with ranks)",
+        handler=handle_get_scouting_report,
+        input_schema={
+            "type": "object",
+            "properties": {
+                "team": {
+                    "type": "string",
+                    "description": "Team name (e.g., 'BYU', 'Duke'). Required.",
+                },
+                "season": {
+                    "type": "string",
+                    "description": "Season year (e.g., '2024'). Defaults to current season.",
+                },
+                "conference_only": {
+                    "type": "boolean",
+                    "description": "If true, returns conference-only stats. Default: false (full season).",
+                },
+            },
+            "required": ["team"],
+        },
+        docstring="""
+Get detailed scouting report for a team.
+
+Returns 37 stats with national ranks covering efficiency, tempo,
+Four Factors, shooting percentages, and point distribution.
+Both offensive and defensive sides.
+
+Args:
+    team: Team name (required). Examples: 'BYU', 'Duke', 'North Carolina'.
+    season: Optional season year (e.g., "2024"). Defaults to current season.
+    conference_only: If True, returns conference-only stats. Default: False.
+
+Returns:
+    JSON object mapping stat names to {value, rank} objects.
+""",
+    ),
+    "get_conference_standings": ToolDefinition(
+        name="get_conference_standings",
+        description="Get conference standings with team records and ratings",
+        handler=handle_get_conference_standings,
+        input_schema={
+            "type": "object",
+            "properties": {
+                "conference": {
+                    "type": "string",
+                    "description": "Conference code (e.g., 'B12', 'SEC', 'B10', 'ACC'). Required.",
+                },
+                "season": {
+                    "type": "string",
+                    "description": "Season year (e.g., '2024'). Defaults to current season.",
+                },
+            },
+            "required": ["conference"],
+        },
+        docstring="""
+Get conference standings with team records and ratings.
+
+Returns standings with overall/conference records, projected records,
+net rating, offensive/defensive ratings, tempo, and conference SOS.
+
+Args:
+    conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC', 'BE'.
+    season: Optional season year (e.g., "2024"). Defaults to current season.
+            Earliest available: 1999.
+
+Returns:
+    JSON array of conference standings.
+""",
+    ),
+    "get_conference_offense": ToolDefinition(
+        name="get_conference_offense",
+        description="Get conference offensive stats for all teams",
+        handler=handle_get_conference_offense,
+        input_schema={
+            "type": "object",
+            "properties": {
+                "conference": {
+                    "type": "string",
+                    "description": "Conference code (e.g., 'B12', 'SEC', 'B10', 'ACC'). Required.",
+                },
+                "season": {
+                    "type": "string",
+                    "description": "Season year (e.g., '2024'). Defaults to current season.",
+                },
+            },
+            "required": ["conference"],
+        },
+        docstring="""
+Get conference offensive stats for all teams in a conference.
+
+Returns offensive efficiency, eFG%, TO%, OR%, FTR, 2P%, 3P%, FT%, and tempo
+for each team in the conference.
+
+Args:
+    conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC'.
+    season: Optional season year (e.g., "2024"). Defaults to current season.
+
+Returns:
+    JSON array of conference offensive stats.
+""",
+    ),
+    "get_conference_defense": ToolDefinition(
+        name="get_conference_defense",
+        description="Get conference defensive stats for all teams",
+        handler=handle_get_conference_defense,
+        input_schema={
+            "type": "object",
+            "properties": {
+                "conference": {
+                    "type": "string",
+                    "description": "Conference code (e.g., 'B12', 'SEC', 'B10', 'ACC'). Required.",
+                },
+                "season": {
+                    "type": "string",
+                    "description": "Season year (e.g., '2024'). Defaults to current season.",
+                },
+            },
+            "required": ["conference"],
+        },
+        docstring="""
+Get conference defensive stats for all teams in a conference.
+
+Returns defensive efficiency, eFG%, TO%, OR%, FTR, 2P%, 3P%, Blk%, and Stl%
+for each team in the conference.
+
+Args:
+    conference: Conference code (required). Examples: 'B12', 'SEC', 'B10', 'ACC'.
+    season: Optional season year (e.g., "2024"). Defaults to current season.
+
+Returns:
+    JSON array of conference defensive stats.
 """,
     ),
 }

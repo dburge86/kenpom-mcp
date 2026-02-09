@@ -1,7 +1,7 @@
 # KenPom MCP Server
 
 ## Purpose
-Production-ready async MCP server that scrapes KenPom basketball analytics and exposes 13 data tools via STDIO (local) and HTTP/SSE (remote) transports.
+Production-ready async MCP server that scrapes KenPom basketball analytics and exposes 18 data tools via STDIO (local) and HTTP/SSE (remote) transports.
 
 ## Project Status: Production Ready ✅
 - 100% test coverage (61 tests)
@@ -25,7 +25,7 @@ Production-ready async MCP server that scrapes KenPom basketball analytics and e
 src/kenpom_mcp/
 ├── server.py          # FastMCP server (STDIO transport)
 ├── http_server.py     # Starlette server (HTTP/SSE transport)
-├── tools.py           # Unified tool registry (13 tools)
+├── tools.py           # Unified tool registry (18 tools)
 ├── scraper.py         # Async scraper with auth + retry logic
 └── parsers/           # HTML parsers for each KenPom page type
 
@@ -39,10 +39,10 @@ tests/
 ## Key Files
 - **src/kenpom_mcp/server.py** - FastMCP server with 13 tools (STDIO)
 - **src/kenpom_mcp/http_server.py** - Starlette server (HTTP/SSE)
-- **src/kenpom_mcp/tools.py** - Unified tool registry (single source of truth)
-- **src/kenpom_mcp/scraper.py** - Async scraper with retry logic
-- **src/kenpom_mcp/parsers/** - HTML parsing modules
-- **tests/** - Comprehensive test suite (61 tests)
+- **src/kenpom_mcp/tools.py** - Unified tool registry (18 tools, single source of truth)
+- **src/kenpom_mcp/scraper.py** - Async scraper with retry logic + season validation
+- **src/kenpom_mcp/parsers/** - HTML parsing modules (7 files: ratings, efficiency, stats, misc, fanmatch, team, conference)
+- **tests/** - Test suite (61 tests, 45 passing)
 - **pyproject.toml** - Dependencies and project config
 - **.pre-commit-config.yaml** - Pre-commit hooks (ruff)
 - **.github/workflows/ci.yml** - CI/CD pipeline
@@ -86,7 +86,7 @@ uv run pytest tests/test_parsers.py -v
 uv run pre-commit run --all-files
 ```
 
-## Available Tools (13)
+## Available Tools (18)
 1. **get_ratings** - Pomeroy ratings (rank, adj efficiency, tempo)
 2. **get_efficiency** - Efficiency and tempo stats
 3. **get_four_factors** - Four Factors (eFG%, TO%, OR%, FTRate)
@@ -100,6 +100,11 @@ uv run pre-commit run --all-files
 11. **get_kpoy** - Player of the Year standings
 12. **get_point_distribution** - Scoring breakdown by shot type
 13. **get_hca** - Home court advantage data
+14. **get_schedule** - Team game schedule and results
+15. **get_scouting_report** - Detailed team scouting report (37 stats with ranks)
+16. **get_conference_standings** - Conference standings with records and ratings
+17. **get_conference_offense** - Conference offensive stats by team
+18. **get_conference_defense** - Conference defensive stats by team
 
 ## Common Issues & Solutions
 - **Login failures**: Check KENPOM_EMAIL and KENPOM_PASSWORD in .env
