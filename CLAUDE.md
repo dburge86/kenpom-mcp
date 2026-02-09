@@ -107,9 +107,55 @@ uv run pre-commit run --all-files
 - **Test failures**: Ensure .env is present or tests will skip auth-required operations
 - **Pre-commit failures**: Run `uv run ruff check --fix` and `uv run ruff format`
 
+## Project Journey & Current State
+
+### What We've Accomplished
+- ✅ **Built production-ready MCP server** — Async architecture with dual transports (STDIO + HTTP/SSE)
+- ✅ **Achieved 100% test coverage** — 61 tests covering all parsers, scraper, and auth flows
+- ✅ **Implemented CI/CD pipeline** — GitHub Actions running tests, linting, formatting on every push
+- ✅ **Added quality enforcement** — Pre-commit hooks with ruff preventing bad commits
+- ✅ **Unified codebase** — Eliminated 222 lines of duplicate code between transports via `tools.py`
+- ✅ **Production-grade resilience** — Retry logic with exponential backoff for network failures
+- ✅ **Prepared for public release** — Removed all personal infrastructure details, sanitized documentation
+- ✅ **Tore down managed infrastructure** — Deleted Google Cloud Run deployment for self-hosted only model
+
+### Current Status
+- **Architecture**: 100% local-first, self-hostable HTTP/SSE optional
+- **Test Coverage**: 61/61 passing, 100% coverage maintained
+- **Code Quality**: Enforced via pre-commit hooks (ruff)
+- **CI/CD**: Active and green on every push
+- **Dependencies**: Stable, modern Python 3.12+ with async-first design
+- **Maintenance**: Low overhead, single source of truth for tool definitions
+
+### Key Decisions & Patterns Established
+
+**Architecture:**
+- STDIO as primary interface (FastMCP) — aligns with 95% of MCP ecosystem usage
+- HTTP/SSE as optional feature — for users needing remote access or custom integrations
+- No managed cloud infrastructure — fully self-hostable on any Python 3.12+ environment
+
+**Code Organization:**
+- Unified tool registry in `tools.py` — single definition, used by both transports
+- Flexible parser testing — keyword-based field matching to handle KenPom HTML variations
+- Custom exception hierarchy — `AuthenticationError` (fail fast) vs `NetworkError` (retry)
+- Type annotations — modern Python 3.12+ syntax (`dict[str, Any]` not `Dict`)
+
+**Quality Standards:**
+- 100% test coverage as success metric (not a vanity metric)
+- Pre-commit hooks prevent bad code from reaching git
+- All tests async-first using `pytest-asyncio`
+- HTTP mocks for integration tests (no real KenPom calls)
+
+### Next Steps
+- [ ] **Optional**: Document self-hosted HTTP deployment guide if users request it
+- [ ] **Optional**: Add "Deployment" section to README if self-hosting becomes a common ask
+- [ ] **Monitor**: Gather feedback from public users and iterate if needed
+- [ ] **Maintain**: Keep dependencies updated, monitor CI/CD health
+
 ## Notes for AI Agents
 - See `.AI_AGENT_NOTES.md` for detailed development history and lessons learned (not in git)
 - All 13 tools use unified registry in `tools.py` - modify there for consistency
 - Parser tests use flexible field matching (keyword-based) to handle KenPom HTML variations
 - Scraper has custom exceptions: `AuthenticationError` (no retry) vs `NetworkError` (retry enabled)
 - Pre-commit hooks run automatically on commit - ensure tests pass first
+- This project prioritizes simplicity and production-readiness over premature optimization
